@@ -16,7 +16,8 @@ library(janitor)
 ```
 
 ```{r}
-damages <- read_csv(here("damages.csv"))
+damages_df <- read_csv(here("damages.csv")) %>% 
+  mutate(warming_sq = warming^2)
 
 warming <- read_csv(here("warming.csv"))
 ```
@@ -26,6 +27,41 @@ warming <- read_csv(here("warming.csv"))
 
 Using damages.csv, estimate a quadratic damage function relating the dollar value of damages to the change in global mean temperature. Omit an intercept term; damages by construction must equal zero when there is no climate change. Plot your estimated damage function, overlaid with a scatterplot of the underlying data.
 
+```{r}
+### Create climate damages model with 0 intercept 
+
+damages_lm <- lm(damages ~ warming + warming_sq -1, data = damages_df)
+
+### Make df with fitted values
+
+damages_pred <- damages_lm$model %>% 
+  mutate(fitted_dam = damages_lm$fitted.values)
+```
+
+```{r}
+### Damages function
+
+damage_fun <- function(warming)
+  {dam <- (damages_lm$coefficients[1]* (warming)) +
+    (damages_lm$coefficients[2] * (warming^2))
+  return(dam)}
+
+### Testing
+# damage_fun(0.69)
+```
+
+```{r figure 1, fig.align='center', fig.cap="Figure 1: Text"}
+
+### Plot - add caption
+
+ggplot(data = damages_pred, aes(x = warming)) + 
+  geom_point(aes(y = damages/1E12), size = 1.2, alpha = 0.5) +
+  geom_line(aes(y = fitted_dam/1E12), size = 1.2, color = 'red') +
+  theme_minimal() + 
+  labs(x = "Warming (Celsius)", y = "Damages (Trillions USD)")
+```
+
+ 
 
 ## Question 2
 
@@ -58,10 +94,6 @@ What is the expected present value of damages up to 2100 under Policy A? What is
 
 
 
-
-
-
-Notes
 
 
 
