@@ -54,9 +54,11 @@ damage_fun <- function(warming)
 # damage_fun(0.69)
 ```
 
-```{r figure 1, fig.align='center', fig.cap="Figure 1: Text"}
+Equation: $Damages$ = `r damages_lm$coefficients[1]` $Warming$ + `r damages_lm$coefficients[2]` $Warming^2$.
 
-### Plot - add caption
+```{r figure 1, fig.align='center', fig.cap="Figure 1: Estimated damages in trillions USD per additional unit of warming (degrees Celsius)."}
+
+### Plot
 
 ggplot(data = damages_pred, aes(x = warming)) + 
   geom_point(aes(y = damages/1E12), size = 1.2, alpha = 0.5) +
@@ -65,8 +67,8 @@ ggplot(data = damages_pred, aes(x = warming)) +
   labs(x = "Warming (Celsius)", y = "Damages (Trillions USD)")
 ```
 
-Equation: $Damages$ = `r damages_lm$coefficients[1]`$Warming$ + `r damages_lm$coefficients[2]`$Warming^2$.
- 
+
+
 
 ## Question 2 
 
@@ -86,7 +88,8 @@ warming_scen <- warming %>%
   mutate(damages_perton = damages_diff/pulse)
 ```
 
-```{r}
+```{r figure 2, fig.align='center', fig.cap="Figure 2: Estimated climate change damages under different warming scenarios."}
+
 ### Plot 1: Damages over time without the pulse
 
 damages_p1 <- ggplot(data = warming_scen) +
@@ -165,7 +168,8 @@ ramsey_damage <- damage_pv_fun(add_damage, ramsey) ### 141.3357
 ```
 
 
-```{r figure 3, fig.align='center', fig.cap="Figure 3: text"}
+```{r figure 3, fig.align='center', fig.cap="Figure 3: Black line is the social cost of carbon (SCC) for discount rates ranging from 1% to 8%. The red point is the SCC under the Ramsey Rule scenario (blue line)."}
+
 ### Plot
 
 ggplot(data = scc_df) +
@@ -199,12 +203,21 @@ Now suppose there are two possible climate policies that can be pursued. Policy 
 
 • Use a discount rate of 2%
 
-What is the expected present value of damages up to 2100 under Policy A? What is the expected present value of damages up to 2100 under Policy B? Suppose undertaking Policy A costs zero and undertaking Policy B costs X. How large could X be for it to still make economic sense to pursue Policy B instead of Policy A? Qualitatively, how would your answer change if society were risk averse?
+**What is the expected present value of damages up to 2100 under Policy A? What is the expected present value of damages up to 2100 under Policy B?**
 
-```{r}
-policy <- scc_df %>% 
-  filter(discount_rate == 2)
-```
+The expected present value of damages under Policy A is $6314.83 trillion. The expected present value of damages under Policy B is 
+$1620.31 trillion. 
+
+**Suppose undertaking Policy A costs zero and undertaking Policy B costs X. How large could X be for it to still make economic sense to pursue Policy B instead of Policy A?**
+
+When society is risk neutral, $E(U(x)) = U(E(x))$. It would make economic sense to pursue Policy B until 
+$U(E(A)) = U(E(B))$.
+In other words, it would make economic sense to pursue Policy B until $-\$6314.83 = -\$1620.31 - X$ or $X = \$4694.52$.
+
+**Qualitatively, how would your answer change if society were risk averse?**
+
+If society is risk averse, then E(U(x)) < U(E(x)). In this case, E(U(A)) < U(B) when X = $4694.52. It is difficult to tell exactly what society's preferences are from this information, but we can estimate that a risk adverse society will be even more inclined to prefer Policy B, which has a more certain outcome, for a cost greater than \$4694.52, at least for a bit. 
+
 
 ```{r}
 ### Creating a new df because I need to think through this without functions
@@ -244,7 +257,7 @@ x <- seq(0, 8000, length.out = 100)
 policy_cost <- tibble(X = x, cost_a = 6314.83, cost_b = 1620.31 + x)
 ```
 
-```{r figure 4, fig.align='center', fig.cap="Figure 4: text"}
+```{r figure 4, fig.align='center', fig.cap="Figure 4: Expected costs under two policy scenarios. The red line represents Policy A. The blue line represents Policy B. The expected costs of the policies are equal where the lines intercept at the black dot."}
 
 ### Plot
 
@@ -256,10 +269,6 @@ ggplot(policy_cost) +
   labs(y = "Expected Damages (Trillions USD)", x = "Policy Cost (USD)")
 ```
 
-
-Explanation given: change up wording. 
-
-If society is risk averse, then $E(U(m)) < U(E(m))$. This implies that when $X=\$2,236$, E(U(A))< U(E(A)) = U(B). Therefore, since E(U(A))<U(B) when $X=\$2301$, we can say that when society is risk averse, they would still prefer Policy B to A for costs greater than \$2,236. However, we cannot put an upper bound on those costs, since we would need to know more about the functional form of $U(m)$. 
 
 
 
