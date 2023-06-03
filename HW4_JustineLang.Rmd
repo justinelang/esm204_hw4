@@ -201,12 +201,65 @@ Now suppose there are two possible climate policies that can be pursued. Policy 
 
 What is the expected present value of damages up to 2100 under Policy A? What is the expected present value of damages up to 2100 under Policy B? Suppose undertaking Policy A costs zero and undertaking Policy B costs X. How large could X be for it to still make economic sense to pursue Policy B instead of Policy A? Qualitatively, how would your answer change if society were risk averse?
 
+```{r}
+policy <- scc_df %>% 
+  filter(discount_rate == 2)
+```
+
+```{r}
+### Creating a new df because I need to think through this without functions
+
+### Remember B/(1 + r)^t  ### Try pmin
+
+policy_scen <- warming %>% 
+  mutate(warming_A1 = warming_baseline) %>% 
+  mutate(warming_A2 = warming_baseline * 1.5) %>% 
+  mutate(warming_B1 = warming_baseline) %>% 
+  mutate(warming_B2 = 1.29) %>% 
+  mutate(warming_B = pmin(warming_B1, warming_B2)) %>% 
+  mutate(damages_A1 = (coeff_1*warming_A1 + coeff_2*warming_A1^2)/((1.02)^(year-2022))) %>% 
+  mutate(damages_A2 = (coeff_1*warming_A2 + coeff_2*warming_A2^2)/((1.02)^(year-2022))) %>% 
+  mutate(damages_B = (coeff_1*warming_B + coeff_2*warming_B^2)/((1.02)^(year-2022)))
+```
+
+```{r}
+### Expected value: E(x) = pa A + pB B
+
+ev_A <- 0.5*sum(policy_scen$damages_A1) + 0.5*sum(policy_scen$damages_A2)
+val_B <- sum(policy_scen$damages_B)
+
+# ev_A/1E12 ### 6314.828
+# val_B/1E12 ### 1620.307
+```
+
+```{r}
+### When risk neutral, E(U(A)) = U(E(A)) 
+
+### Policy A: U(A) = U(-$6314.83). Policy B: U(B) = U(-$1620.31 - X)
+
+### Cost scenario
+
+x <- seq(0, 8000, length.out = 100)
+
+policy_cost <- tibble(X = x, cost_a = 6314.83, cost_b = 1620.31 + x)
+```
+
+```{r figure 4, fig.align='center', fig.cap="Figure 4: text"}
+
+### Plot
+
+ggplot(policy_cost) +
+  geom_line(aes(x = X, y = cost_b), size = 1.2, color = 'blue') +
+  geom_hline(yintercept = 6314.83, size = 1.2, color = 'red')  +
+  geom_point(aes(x = 4694.52, y = 6314,83), size = 2.5) +
+  theme_minimal() +
+  labs(y = "Expected Damages (Trillions USD)", x = "Policy Cost (USD)")
+```
 
 
+Explanation given: change up wording. 
 
-
-
-
+If society is risk averse, then $E(U(m)) < U(E(m))$. This implies that when $X=\$2,236$, E(U(A))< U(E(A)) = U(B). Therefore, since E(U(A))<U(B) when $X=\$2301$, we can say that when society is risk averse, they would still prefer Policy B to A for costs greater than \$2,236. However, we cannot put an upper bound on those costs, since we would need to know more about the functional form of $U(m)$. 
 
 
 
