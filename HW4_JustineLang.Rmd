@@ -156,13 +156,24 @@ scc_df <- data.frame(scc) %>%
   mutate(discount_rate = r*100)
 ```
 
+```{r}
+### Ramsey Rule discount rate (from Question 4)
+
+ramsey = 0.001 + 2*0.01
+
+ramsey_damage <- damage_pv_fun(add_damage, ramsey) ### 141.3357
+```
+
+
 ```{r figure 3, fig.align='center', fig.cap="Figure 3: text"}
 ### Plot
 
 ggplot(data = scc_df) +
   geom_line(aes(x = discount_rate, y = scc), size = 1.2) +
   theme_minimal() + 
-  labs(x = "Discount Rate (Percentage)", y = "Social Cost of Carbon (USD/Ton)")
+  labs(x = "Discount Rate (Percentage)", y = "Social Cost of Carbon (USD/Ton)") +
+  geom_vline(xintercept = ramsey*100, size = 1.2, color = "blue3") +
+  geom_point(aes(x = ramsey*100, y = ramsey_damage), size = 2.5, color = 'red')
 ```
 
 
@@ -170,6 +181,10 @@ ggplot(data = scc_df) +
 ## Question 4
 
 The National Academies of Sciences, Engineering, and Medicine advised the government in a 2017 report to use the Ramsey Rule when discounting within the SCC calculation, a recommendation the EPA considered. Recall the Ramsey Rule: r = p + ng. Using p = 0.001, n = 2, and g = 0.01, what is the SCC? Locate this point on your graph from above.
+
+
+**With a Ramsey Rule discount rate of 0.021, or roughly 2.1%, the SCC is around $141.34.** This point is shown on the graph above. 
+
 
 
 ## Question 5
