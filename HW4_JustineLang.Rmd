@@ -117,7 +117,7 @@ damages_p4 <- ggplot(data = warming_scen) +
 
 ### Combine plots
 
-plot_grid(damages_p1, damages_p2, damages_p3, damages_p4, ncol=2)
+plot_grid(damages_p1, damages_p2, damages_p3, damages_p4)
 ```
 
 
@@ -125,6 +125,46 @@ plot_grid(damages_p1, damages_p2, damages_p3, damages_p4, ncol=2)
 ## Question 3
 
 The SCC is defined as the present discounted value of the stream of future damages caused by one additional ton of CO2. The Obama Administration used a discount rate of 3% to discount damages. The recent EPA update uses a discount rate that changes over time, but starts at 2%. Calculate and make a plot of the SCC (y-axis) against the discount rate (x-axis) for discount rates ranging from 1% to 8%.
+
+```{r}
+### Create range of discount rates (r) from 1% to 8% in 0.05% increments
+
+r <- seq(0.01, 0.08, 0.005)
+
+### Defining additional damage
+
+add_damage <- warming_scen$damages_perton
+
+### Function to calculate damages in present value
+
+damage_pv_fun <- function(add_damage, r){
+  add_damage_pv = sum(add_damage/((1 + r)^c(1:length(add_damage))))
+  return(add_damage_pv)
+}
+```
+
+```{r}
+### Create SCC and discount rate df, following Patrick's advice
+
+scc <- numeric()
+
+for(i in 1:length(r)){
+  scc[i] <- damage_pv_fun(add_damage, r[i])
+}
+
+scc_df <- data.frame(scc) %>% 
+  mutate(discount_rate = r*100)
+```
+
+```{r figure 3, fig.align='center', fig.cap="Figure 3: text"}
+### Plot
+
+ggplot(data = scc_df) +
+  geom_line(aes(x = discount_rate, y = scc), size = 1.2) +
+  theme_minimal() + 
+  labs(x = "Discount Rate (Percentage)", y = "Social Cost of Carbon (USD/Ton)")
+```
+
 
 
 ## Question 4
