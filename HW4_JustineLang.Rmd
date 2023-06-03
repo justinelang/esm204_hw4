@@ -13,6 +13,7 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 library(tidyverse)
 library(here)
 library(janitor)
+library(cowplot)
 ```
 
 ```{r}
@@ -31,6 +32,9 @@ Using damages.csv, estimate a quadratic damage function relating the dollar valu
 ### Create climate damages model with 0 intercept 
 
 damages_lm <- lm(damages ~ warming + warming_sq -1, data = damages_df)
+
+coeff_1 <- damages_lm$coefficients[[1]]
+coeff_2 <- damages_lm$coefficients[[2]]
 
 ### Make df with fitted values
 
@@ -61,11 +65,61 @@ ggplot(data = damages_pred, aes(x = warming)) +
   labs(x = "Warming (Celsius)", y = "Damages (Trillions USD)")
 ```
 
+Equation: $Damages$ = `r damages_lm$coefficients[1]`$Warming$ + `r damages_lm$coefficients[2]`$Warming^2$.
  
 
-## Question 2
+## Question 2 
 
 Use warming.csv and your estimated damage function to predict damages in each year under the baseline climate trajectory and under the pulse scenario. Make four plots: (1) damages over time without the pulse, (2) damages over time with the pulse, (3) the difference in damages over time that arises from the pulse, and (4) the difference in damages over time from the pulse per ton of CO2 (you can assume that each ton of the pulse causes the same amount of damage).
+
+```{r}
+pulse <- 35E9
+```
+
+```{r}
+### Create a df of the different warming scenarios, with and without the pulse
+
+warming_scen <- warming %>% 
+  mutate(damages_base = damage_fun(warming_baseline)) %>% 
+  mutate(damages_pulse = damage_fun(warming_pulse)) %>%  
+  mutate(damages_diff = damages_pulse - damages_base) %>%
+  mutate(damages_perton = damages_diff/pulse)
+```
+
+```{r}
+### Plot 1: Damages over time without the pulse
+
+damages_p1 <- ggplot(data = warming_scen) +
+  geom_line(aes(x = year, y = damages_base/1E12), size = 1, color = 'red') +
+  theme_minimal() +
+  labs(title = "1) Damages Without Pulse", x = "Year", y = "Trillions USD")
+
+### Plot 2: Damages over time with the pulse
+
+damages_p2 <- ggplot(data = warming_scen) +
+  geom_line(aes(x = year, y = damages_pulse/1E12), size = 1, color = 'red') +
+  theme_minimal() +
+  labs(title = "2) Damages With Pulse", x = "Year", y = "Trillions USD")
+
+### Plot 3: Difference in damages over time that arises from the pulse
+
+damages_p3 <- ggplot(data = warming_scen) +
+  geom_line(aes(x = year, y = damages_diff/1E12), size = 1, color = 'red') +
+  theme_minimal() +
+  labs(title = "3) Difference in Damages From Pulse", x = "Year", y = "Trillions USD")
+
+### Plot 4: Difference in damages over time from the pulse per ton of CO2
+
+damages_p4 <- ggplot(data = warming_scen) +
+  geom_line(aes(x = year, y = damages_perton), size = 1, color = 'red') +
+  theme_minimal() +
+  labs(title = "4) Difference in Damages Per Ton CO2", x = "Year", y = "USD")
+
+### Combine plots
+
+plot_grid(damages_p1, damages_p2, damages_p3, damages_p4, ncol=2)
+```
+
 
 
 ## Question 3
